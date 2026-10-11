@@ -1,0 +1,75 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.qmmughal/titan-email-mcp",
+  "description": "MCP server for Titan Email (IMAP/SMTP) — read, search, and send mail via Claude.",
+  "repository": {
+    "url": "https://github.com/qmmughal/titan-email-mcp",
+    "source": "github"
+  },
+  "version": "1.0.2",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "titan-email-mcp",
+      "version": "1.0.2",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "description": "Your Titan Email mailbox address, e.g. you@yourdomain.com",
+          "isRequired": true,
+          "format": "string",
+          "isSecret": false,
+          "name": "TITAN_EMAIL"
+        },
+        {
+          "description": "Your Titan Email password (use an app-specific password if your provider offers one)",
+          "isRequired": true,
+          "format": "string",
+          "isSecret": true,
+          "name": "TITAN_PASSWORD"
+        },
+        {
+          "description": "IMAP/SMTP host preset: \"titan\" (default) for native Titan Email, or \"godaddy\" if your domain and mailbox were purchased through GoDaddy",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": false,
+          "name": "TITAN_PROVIDER",
+          "default": "titan"
+        },
+        {
+          "description": "Display name shown on outgoing mail",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": false,
+          "name": "TITAN_FROM_NAME"
+        },
+        {
+          "description": "Set to \"false\" to disable send_email and sending replies (read + draft-only mode)",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": false,
+          "name": "TITAN_ALLOW_SEND",
+          "default": "true"
+        },
+        {
+          "description": "Folder name sent-mail copies are appended to",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": false,
+          "name": "TITAN_SENT_FOLDER",
+          "default": "Sent"
+        },
+        {
+          "description": "Folder name drafts are saved to",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": false,
+          "name": "TITAN_DRAFTS_FOLDER",
+          "default": "Drafts"
+        }
+      ]
+    }
+  ]
+}
