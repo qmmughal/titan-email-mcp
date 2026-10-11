@@ -144,6 +144,7 @@ server.registerTool(
       (result.imap as Record<string, unknown>).status = `failed: ${e instanceof Error ? e.message : String(e)}`;
     }
     try {
+      ensureCreds();
       await smtp.verify();
       (result.smtp as Record<string, unknown>).status = "ok";
     } catch (e) {

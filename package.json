@@ -1,7 +1,7 @@
 {
   "name": "titan-email-mcp",
-  "version": "1.0.4",
-  "description": "MCP server that connects Claude (or any MCP client) to a Titan Email mailbox over IMAP/SMTP — tested and confirmed working with Titan accounts resold through GoDaddy.",
+  "version": "1.0.5",
+  "description": "MCP server that connects Claude (or any MCP client) to a Titan Email mailbox over IMAP/SMTP, tested and confirmed with GoDaddy mailboxes.",
   "mcpName": "io.github.qmmughal/titan-email-mcp",
   "main": "dist/index.js",
   "type": "module",
