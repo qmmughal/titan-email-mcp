@@ -29,8 +29,8 @@ if (!preset) {
 const activePreset = preset ?? PROVIDER_PRESETS.titan;
 
 const cfg = {
-  user: req("TITAN_EMAIL"),
-  pass: req("TITAN_PASSWORD"),
+  user: process.env.TITAN_EMAIL ?? "",
+  pass: process.env.TITAN_PASSWORD ?? "",
   provider: preset ? providerName : "titan",
   imapHost: process.env.TITAN_IMAP_HOST ?? activePreset.imapHost,
   imapPort: Number(process.env.TITAN_IMAP_PORT ?? activePreset.imapPort),
@@ -42,20 +42,25 @@ const cfg = {
   draftsFolder: process.env.TITAN_DRAFTS_FOLDER ?? "Drafts",
 };
 
-function req(name: string): string {
-  const v = process.env[name];
-  if (!v) {
-    console.error(
-      `Missing required env var ${name}. Set TITAN_EMAIL and TITAN_PASSWORD in your MCP client's server config — see README.md for examples.`,
-    );
-    process.exit(1);
+// Tool schemas register unconditionally below, regardless of credentials, so clients
+// and directory crawlers can list this server's capabilities without live creds.
+// Credentials are only required once a tool actually tries to touch the mailbox.
+if (!cfg.user || !cfg.pass) {
+  console.error(
+    "TITAN_EMAIL / TITAN_PASSWORD not set — tools are registered but will return an error until both are configured in your MCP client's server config.",
+  );
+}
+
+function ensureCreds(): void {
+  if (!cfg.user || !cfg.pass) {
+    throw new Error("Missing TITAN_EMAIL and/or TITAN_PASSWORD. Set both in your MCP client's server config — see README.md for examples.");
   }
-  return v;
 }
 
 // ---------- helpers ----------
 
 async function withImap<T>(fn: (c: ImapFlow) => Promise<T>): Promise<T> {
+  ensureCreds();
   const client = new ImapFlow({
     host: cfg.imapHost,
     port: cfg.imapPort,
@@ -315,6 +320,7 @@ server.registerTool(
   async (a) => {
     if (!cfg.allowSend) return fail("Sending is disabled (TITAN_ALLOW_SEND=false). Use save_draft instead.");
     try {
+      ensureCreds();
       const mail = { from: fromAddr(), to: a.to, cc: a.cc, bcc: a.bcc, subject: a.subject, text: a.body, html: a.html };
       const info = await smtp.sendMail(mail);
       await appendCopy(cfg.sentFolder, await buildRaw({ ...mail, messageId: info.messageId }), ["\\Seen"]);
