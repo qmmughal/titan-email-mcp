@@ -1,0 +1,51 @@
+# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml
+
+startCommand:
+  type: stdio
+  configSchema:
+    # JSON Schema defining the configuration options for the MCP.
+    type: object
+    required:
+      - titanEmail
+      - titanPassword
+    properties:
+      titanEmail:
+        type: string
+        description: Your Titan Email mailbox address, e.g. you@yourdomain.com.
+      titanPassword:
+        type: string
+        description: Your Titan Email password (an app-specific password if your provider offers one).
+      titanProvider:
+        type: string
+        enum:
+          - titan
+          - godaddy
+        default: titan
+        description: IMAP/SMTP host preset. Use "godaddy" if your domain and mailbox were purchased through GoDaddy; use "titan" if you signed up for Titan Email directly.
+      titanFromName:
+        type: string
+        description: Display name shown on outgoing mail.
+      titanAllowSend:
+        type: boolean
+        default: true
+        description: Set to false to disable send_email and sending replies (read + draft-only mode).
+  commandFunction:
+    # A JS function that produces the CLI command based on the given config to start the MCP on stdio.
+    |-
+    (config) => ({
+      command: 'npx',
+      args: ['-y', 'titan-email-mcp'],
+      env: {
+        TITAN_EMAIL: config.titanEmail,
+        TITAN_PASSWORD: config.titanPassword,
+        TITAN_PROVIDER: config.titanProvider || 'titan',
+        TITAN_FROM_NAME: config.titanFromName || '',
+        TITAN_ALLOW_SEND: String(config.titanAllowSend !== false)
+      }
+    })
+  exampleConfig:
+    titanEmail: you@yourdomain.com
+    titanPassword: your-app-password
+    titanProvider: titan
+    titanFromName: Your Name
+    titanAllowSend: false
