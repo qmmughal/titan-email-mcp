@@ -1,17 +1,17 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.qmmughal/titan-email-mcp",
-  "description": "MCP server for Titan Email (IMAP/SMTP) — read, search, and send mail via Claude.",
+  "description": "MCP server for Titan Email (IMAP/SMTP) — tested working with GoDaddy-hosted mailboxes.",
   "repository": {
     "url": "https://github.com/qmmughal/titan-email-mcp",
     "source": "github"
   },
-  "version": "1.0.3",
+  "version": "1.0.4",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "titan-email-mcp",
-      "version": "1.0.3",
+      "version": "1.0.4",
       "transport": {
         "type": "stdio"
       },
@@ -31,7 +31,7 @@
           "name": "TITAN_PASSWORD"
         },
         {
-          "description": "IMAP/SMTP host preset: \"titan\" (default) for native Titan Email, or \"godaddy\" if your domain and mailbox were purchased through GoDaddy",
+          "description": "IMAP/SMTP host preset: \"titan\" (default) for native Titan Email, or \"godaddy\" if your domain and mailbox were purchased through GoDaddy (tested and confirmed working)",
           "isRequired": false,
           "format": "string",
           "isSecret": false,

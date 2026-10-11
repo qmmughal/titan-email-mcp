@@ -16,7 +16,7 @@ Titan Email (the mailbox product bundled with many domain registrars, including 
 ## Why use this
 
 - **Your inbox becomes an agent tool.** Ask Claude to summarize unread mail, draft replies in your voice, triage by sender, or find "that invoice from last March" — in plain English, in the same conversation you're already having.
-- **Works with GoDaddy-hosted Titan mailboxes.** If you bought your domain and mailbox through GoDaddy, your email is very likely running on Titan's infrastructure under the hood. One `TITAN_PROVIDER` setting handles the different server hostnames — see [Supported providers](#supported-providers).
+- **✅ Tested and confirmed working with GoDaddy-hosted Titan mailboxes.** If you bought your domain and mailbox through GoDaddy, your email is very likely running on Titan's infrastructure under the hood. One `TITAN_PROVIDER` setting handles the different server hostnames — see [Supported providers](#supported-providers).
 - **Safe by default.** Sending is gated behind `TITAN_ALLOW_SEND` (default **on**, but trivially switched **off**) so you can run Claude in read-only / draft-only mode until you trust it.
 - **No middleman service.** Credentials go straight from your MCP client's local config to Titan's own IMAP/SMTP servers over TLS. Nothing is proxied through a third party, cached, or logged to disk.
 - **One process, ten focused tools.** No bloated API surface — just the operations you actually do in a mailbox (see [Tools](#tools) below).
@@ -31,6 +31,8 @@ Titan Email is used directly (`imap.titan.email` / `smtp.titan.email`) and resol
 |---|---|---|---|
 | `titan` (default) | `imap.titan.email` | `smtp.titan.email` | You signed up for Titan Email directly, or your registrar just says "Titan Email". |
 | `godaddy` | `imap.secureserver.net` | `smtpout.secureserver.net` | Your domain **and mailbox** were purchased through GoDaddy. |
+
+`godaddy` has been tested against a live GoDaddy-hosted Titan mailbox and confirmed working.
 
 If your reseller uses yet another hostname, leave `TITAN_PROVIDER` unset and override `TITAN_IMAP_HOST` / `TITAN_IMAP_PORT` / `TITAN_SMTP_HOST` / `TITAN_SMTP_PORT` directly — check your provider's welcome email or webmail settings page for the exact values. Explicit host/port variables always win over the preset.
 
@@ -109,7 +111,7 @@ Use `--scope project` instead of `--scope user` to make it available only inside
 
 ### GoDaddy users — ready-to-paste config
 
-If your domain **and mailbox** were purchased through GoDaddy, your email almost certainly runs on Titan's infrastructure under GoDaddy's own hostnames, not Titan's. You don't need to look those up — just use `TITAN_PROVIDER=godaddy` and everything else works exactly the same as above:
+If your domain **and mailbox** were purchased through GoDaddy, your email almost certainly runs on Titan's infrastructure under GoDaddy's own hostnames, not Titan's. This has been tested end-to-end against a live GoDaddy-hosted Titan mailbox — you don't need to look those hostnames up yourself; just use `TITAN_PROVIDER=godaddy` and everything else works exactly the same as above:
 
 **Claude Desktop** (`claude_desktop_config.json`):
 
