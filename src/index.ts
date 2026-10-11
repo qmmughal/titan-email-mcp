@@ -11,13 +11,31 @@ import nodemailer, { type SendMailOptions } from "nodemailer";
 import { simpleParser } from "mailparser";
 import { z } from "zod";
 
+// Host/port presets for known Titan-based providers. TITAN_IMAP_HOST / TITAN_SMTP_HOST
+// (and their *_PORT siblings) always win over the preset, so any reseller can be
+// supported by setting those explicitly even if it's not listed here.
+const PROVIDER_PRESETS: Record<string, { imapHost: string; imapPort: number; smtpHost: string; smtpPort: number }> = {
+  titan: { imapHost: "imap.titan.email", imapPort: 993, smtpHost: "smtp.titan.email", smtpPort: 465 },
+  godaddy: { imapHost: "imap.secureserver.net", imapPort: 993, smtpHost: "smtpout.secureserver.net", smtpPort: 465 },
+};
+
+const providerName = (process.env.TITAN_PROVIDER ?? "titan").toLowerCase();
+const preset = PROVIDER_PRESETS[providerName];
+if (!preset) {
+  console.error(
+    `Unknown TITAN_PROVIDER "${providerName}", falling back to "titan". Valid values: ${Object.keys(PROVIDER_PRESETS).join(", ")}.`,
+  );
+}
+const activePreset = preset ?? PROVIDER_PRESETS.titan;
+
 const cfg = {
   user: req("TITAN_EMAIL"),
   pass: req("TITAN_PASSWORD"),
-  imapHost: process.env.TITAN_IMAP_HOST ?? "imap.titan.email",
-  imapPort: Number(process.env.TITAN_IMAP_PORT ?? 993),
-  smtpHost: process.env.TITAN_SMTP_HOST ?? "smtp.titan.email",
-  smtpPort: Number(process.env.TITAN_SMTP_PORT ?? 465),
+  provider: preset ? providerName : "titan",
+  imapHost: process.env.TITAN_IMAP_HOST ?? activePreset.imapHost,
+  imapPort: Number(process.env.TITAN_IMAP_PORT ?? activePreset.imapPort),
+  smtpHost: process.env.TITAN_SMTP_HOST ?? activePreset.smtpHost,
+  smtpPort: Number(process.env.TITAN_SMTP_PORT ?? activePreset.smtpPort),
   fromName: process.env.TITAN_FROM_NAME ?? "",
   allowSend: (process.env.TITAN_ALLOW_SEND ?? "true").toLowerCase() !== "false",
   sentFolder: process.env.TITAN_SENT_FOLDER ?? "Sent",
@@ -27,7 +45,9 @@ const cfg = {
 function req(name: string): string {
   const v = process.env[name];
   if (!v) {
-    console.error(`Missing required env var ${name}`);
+    console.error(
+      `Missing required env var ${name}. Set TITAN_EMAIL and TITAN_PASSWORD in your MCP client's server config — see README.md for examples.`,
+    );
     process.exit(1);
   }
   return v;
@@ -96,6 +116,37 @@ async function summaries(c: ImapFlow, uids: number[]) {
 
 const server = new McpServer({ name: "titan-email", version: "1.0.0" });
 const folder = z.string().default("INBOX").describe("Mailbox path, e.g. INBOX, Sent, Archive");
+
+server.registerTool(
+  "test_connection",
+  {
+    description:
+      "Verify IMAP and SMTP login against the configured Titan (or GoDaddy-hosted Titan) account. " +
+      "Run this first after setup — it touches no mail, it only confirms the credentials and host settings work.",
+  },
+  async () => {
+    const result: Record<string, unknown> = {
+      user: cfg.user,
+      provider: cfg.provider,
+      imap: { host: cfg.imapHost, port: cfg.imapPort, status: "pending" },
+      smtp: { host: cfg.smtpHost, port: cfg.smtpPort, status: "pending" },
+      allowSend: cfg.allowSend,
+    };
+    try {
+      await withImap(async () => undefined);
+      (result.imap as Record<string, unknown>).status = "ok";
+    } catch (e) {
+      (result.imap as Record<string, unknown>).status = `failed: ${e instanceof Error ? e.message : String(e)}`;
+    }
+    try {
+      await smtp.verify();
+      (result.smtp as Record<string, unknown>).status = "ok";
+    } catch (e) {
+      (result.smtp as Record<string, unknown>).status = `failed: ${e instanceof Error ? e.message : String(e)}`;
+    }
+    return ok(result);
+  },
+);
 
 server.registerTool(
   "list_folders",
@@ -419,4 +470,4 @@ server.registerTool(
 );
 
 await server.connect(new StdioServerTransport());
-console.error(`titan-email MCP running for ${cfg.user}`);
+console.error(`titan-email MCP running for ${cfg.user} (provider=${cfg.provider}, imap=${cfg.imapHost}:${cfg.imapPort})`);
