@@ -42,16 +42,17 @@ If your reseller uses yet another hostname, leave `TITAN_PROVIDER` unset and ove
 
 **1. Enable IMAP/SMTP access** — in Titan webmail (or your reseller's equivalent, e.g. GoDaddy's Email & Office settings): **Settings → Enable Titan on other apps**. This is required; without it, logins from this server will be rejected even with the correct password.
 
-**2. Clone and build:**
+**2. Get the server** — either works, pick one:
 
-```bash
-git clone https://github.com/qmmughal/titan-email-mcp.git
-cd titan-email-mcp/titan-mcp
-npm install
-npm run build
-```
-
-This produces `dist/index.js`, which your MCP client launches as a subprocess. Note the **absolute path** to it — you'll need it below.
+- **npx (no install step)** — your MCP client runs `npx titan-email-mcp` directly; npm fetches it on first use and caches it. This is the path used in the config examples below.
+- **Clone and build**, if you want to read/modify the source first:
+  ```bash
+  git clone https://github.com/qmmughal/titan-email-mcp.git
+  cd titan-email-mcp/titan-mcp
+  npm install
+  npm run build
+  ```
+  This produces `dist/index.js` — point your client's `args` at its **absolute path** instead of using `npx`.
 
 **3. Register it with your MCP client** — pick your client below, plug in your credentials, then restart the client.
 
@@ -65,8 +66,8 @@ Edit your `claude_desktop_config.json` ([config file location](https://modelcont
 {
   "mcpServers": {
     "titan-email": {
-      "command": "node",
-      "args": ["/absolute/path/to/titan-email-mcp/titan-mcp/dist/index.js"],
+      "command": "npx",
+      "args": ["-y", "titan-email-mcp"],
       "env": {
         "TITAN_EMAIL": "you@yourdomain.com",
         "TITAN_PASSWORD": "your-password",
@@ -79,6 +80,8 @@ Edit your `claude_desktop_config.json` ([config file location](https://modelcont
 }
 ```
 
+Built from source instead? Swap `"command": "npx", "args": ["-y", "titan-email-mcp"]` for `"command": "node", "args": ["/absolute/path/to/titan-email-mcp/titan-mcp/dist/index.js"]`.
+
 ### Claude Code
 
 ```bash
@@ -88,7 +91,7 @@ claude mcp add titan-email --scope user \
   -e TITAN_PROVIDER=titan \
   -e TITAN_FROM_NAME="Your Name" \
   -e TITAN_ALLOW_SEND=false \
-  -- node /absolute/path/to/titan-email-mcp/titan-mcp/dist/index.js
+  -- npx -y titan-email-mcp
 ```
 
 Use `--scope project` instead of `--scope user` to make it available only inside one repo (written to `.mcp.json`, safe to share with a team since it carries no secrets by itself — just don't commit real credentials into it).
