@@ -1,8 +1,17 @@
 # Titan Email MCP
 
+[![npm version](https://img.shields.io/npm/v/titan-email-mcp.svg)](https://www.npmjs.com/package/titan-email-mcp)
+[![npm downloads](https://img.shields.io/npm/dm/titan-email-mcp.svg)](https://www.npmjs.com/package/titan-email-mcp)
+[![CI](https://github.com/qmmughal/titan-email-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/qmmughal/titan-email-mcp/actions/workflows/ci.yml)
+[![license](https://img.shields.io/npm/l/titan-email-mcp.svg)](LICENSE)
+
 Connect Claude — Desktop, Code, Cursor, or any [MCP](https://modelcontextprotocol.io) client — directly to a **Titan Email** mailbox, so it can read, search, triage, and send mail on your behalf.
 
+Package: [npmjs.com/package/titan-email-mcp](https://www.npmjs.com/package/titan-email-mcp) · Source: [github.com/qmmughal/titan-email-mcp](https://github.com/qmmughal/titan-email-mcp)
+
 Titan Email (the mailbox product bundled with many domain registrars, including **GoDaddy**) has no public REST API. This server bridges that gap by talking to Titan's standard **IMAP** and **SMTP** endpoints instead, so your AI assistant gets real mailbox access without any vendor integration work.
+
+**Contents:** [Why use this](#why-use-this) · [Supported providers](#supported-providers) · [Tools](#tools) · [Quick start](#quick-start) · [Configuration](#configuration) · [Security notes](#security-notes) · [Troubleshooting](#troubleshooting) · [Development](#development) · [Contributing](#contributing) · [License](#license)
 
 ## Why use this
 
@@ -10,7 +19,8 @@ Titan Email (the mailbox product bundled with many domain registrars, including 
 - **Works with GoDaddy-hosted Titan mailboxes.** If you bought your domain and mailbox through GoDaddy, your email is very likely running on Titan's infrastructure under the hood. One `TITAN_PROVIDER` setting handles the different server hostnames — see [Supported providers](#supported-providers).
 - **Safe by default.** Sending is gated behind `TITAN_ALLOW_SEND` (default **on**, but trivially switched **off**) so you can run Claude in read-only / draft-only mode until you trust it.
 - **No middleman service.** Credentials go straight from your MCP client's local config to Titan's own IMAP/SMTP servers over TLS. Nothing is proxied through a third party, cached, or logged to disk.
-- **One process, nine focused tools.** No bloated API surface — just the operations you actually do in a mailbox (see [Tools](#tools) below).
+- **One process, ten focused tools.** No bloated API surface — just the operations you actually do in a mailbox (see [Tools](#tools) below).
+- **Published on npm.** Run it with `npx titan-email-mcp` — no cloning or building required for everyday use.
 
 ## Supported providers
 
@@ -145,6 +155,8 @@ npm start        # run the built server directly (reads env vars from your shell
 ```
 
 The server speaks MCP over stdio (`StdioServerTransport`) — it's not an HTTP service, so running it directly just blocks waiting for a client on stdin.
+
+**Releasing a new version** (maintainers): bump `version` in `package.json`, run `npm run build` to confirm it compiles, commit and push, then `npm publish` from `titan-mcp/`. The package only ships `dist/`, `README.md`, and `LICENSE` (see `files` in `package.json`) — source TypeScript stays GitHub-only.
 
 ## Contributing
 
