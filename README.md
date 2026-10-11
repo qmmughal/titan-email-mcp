@@ -7,7 +7,7 @@
 
 Connect Claude — Desktop, Code, Cursor, or any [MCP](https://modelcontextprotocol.io) client — directly to a **Titan Email** mailbox, so it can read, search, triage, and send mail on your behalf.
 
-Package: [npmjs.com/package/titan-email-mcp](https://www.npmjs.com/package/titan-email-mcp) · Source: [github.com/qmmughal/titan-email-mcp](https://github.com/qmmughal/titan-email-mcp)
+Package: [npmjs.com/package/titan-email-mcp](https://www.npmjs.com/package/titan-email-mcp) · Source: [github.com/qmmughal/titan-email-mcp](https://github.com/qmmughal/titan-email-mcp) · Listed on the [official MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.qmmughal/titan-email-mcp) as `io.github.qmmughal/titan-email-mcp`, and on [Smithery](https://smithery.ai/servers/qmmughal/titan-email-mcp)
 
 Titan Email (the mailbox product bundled with many domain registrars, including **GoDaddy**) has no public REST API. This server bridges that gap by talking to Titan's standard **IMAP** and **SMTP** endpoints instead, so your AI assistant gets real mailbox access without any vendor integration work.
 
@@ -21,6 +21,7 @@ Titan Email (the mailbox product bundled with many domain registrars, including 
 - **No middleman service.** Credentials go straight from your MCP client's local config to Titan's own IMAP/SMTP servers over TLS. Nothing is proxied through a third party, cached, or logged to disk.
 - **One process, ten focused tools.** No bloated API surface — just the operations you actually do in a mailbox (see [Tools](#tools) below).
 - **Published on npm.** Run it with `npx titan-email-mcp` — no cloning or building required for everyday use.
+- **Discoverable.** Listed on the [official MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.qmmughal/titan-email-mcp) and on [Smithery](https://smithery.ai/servers/qmmughal/titan-email-mcp), so MCP clients and directories that browse those registries can find and install it directly.
 
 ## Supported providers
 
@@ -156,7 +157,7 @@ npm start        # run the built server directly (reads env vars from your shell
 
 The server speaks MCP over stdio (`StdioServerTransport`) — it's not an HTTP service, so running it directly just blocks waiting for a client on stdin.
 
-**Releasing a new version** (maintainers): bump `version` in `package.json`, run `npm run build` to confirm it compiles, commit and push, then `npm publish` from `titan-mcp/`. The package only ships `dist/`, `README.md`, and `LICENSE` (see `files` in `package.json`) — source TypeScript stays GitHub-only.
+**Releasing a new version** (maintainers): bump `version` in `package.json` (and the matching `version` fields in `server.json`), run `npm run build` to confirm it compiles, commit and push, then `npm publish` from `titan-mcp/`. The package only ships `dist/`, `README.md`, and `LICENSE` (see `files` in `package.json`) — source TypeScript stays GitHub-only. After the npm publish lands, update the [MCP Registry](https://registry.modelcontextprotocol.io) listing with `mcp-publisher publish` (requires `mcp-publisher login github` once per session — see the [registry quickstart](https://modelcontextprotocol.io/registry/quickstart)), then tag a GitHub release (`gh release create vX.Y.Z`) so Smithery's crawler picks up the new version via `smithery.yaml`.
 
 ## Contributing
 
