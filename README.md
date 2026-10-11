@@ -11,7 +11,7 @@ Package: [npmjs.com/package/titan-email-mcp](https://www.npmjs.com/package/titan
 
 Titan Email (the mailbox product bundled with many domain registrars, including **GoDaddy**) has no public REST API. This server bridges that gap by talking to Titan's standard **IMAP** and **SMTP** endpoints instead, so your AI assistant gets real mailbox access without any vendor integration work.
 
-**Contents:** [Why use this](#why-use-this) · [Supported providers](#supported-providers) · [Tools](#tools) · [Quick start](#quick-start) · [Configuration](#configuration) · [Security notes](#security-notes) · [Troubleshooting](#troubleshooting) · [Development](#development) · [Contributing](#contributing) · [License](#license)
+**Contents:** [Why use this](#why-use-this) · [Supported providers](#supported-providers) · [Tools](#tools) · [Quick start](#quick-start) · [GoDaddy users — ready-to-paste config](#godaddy-users--ready-to-paste-config) · [Configuration](#configuration) · [Security notes](#security-notes) · [Troubleshooting](#troubleshooting) · [Development](#development) · [Contributing](#contributing) · [License](#license)
 
 ## Why use this
 
@@ -107,6 +107,44 @@ claude mcp add titan-email --scope user \
 
 Use `--scope project` instead of `--scope user` to make it available only inside one repo (written to `.mcp.json`, safe to share with a team since it carries no secrets by itself — just don't commit real credentials into it).
 
+### GoDaddy users — ready-to-paste config
+
+If your domain **and mailbox** were purchased through GoDaddy, your email almost certainly runs on Titan's infrastructure under GoDaddy's own hostnames, not Titan's. You don't need to look those up — just use `TITAN_PROVIDER=godaddy` and everything else works exactly the same as above:
+
+**Claude Desktop** (`claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "titan-email": {
+      "command": "npx",
+      "args": ["-y", "titan-email-mcp"],
+      "env": {
+        "TITAN_EMAIL": "you@yourdomain.com",
+        "TITAN_PASSWORD": "your-godaddy-mailbox-password",
+        "TITAN_PROVIDER": "godaddy",
+        "TITAN_FROM_NAME": "Your Name",
+        "TITAN_ALLOW_SEND": "false"
+      }
+    }
+  }
+}
+```
+
+**Claude Code:**
+
+```bash
+claude mcp add titan-email --scope user \
+  -e TITAN_EMAIL=you@yourdomain.com \
+  -e TITAN_PASSWORD=your-godaddy-mailbox-password \
+  -e TITAN_PROVIDER=godaddy \
+  -e TITAN_FROM_NAME="Your Name" \
+  -e TITAN_ALLOW_SEND=false \
+  -- npx -y titan-email-mcp
+```
+
+Before either one works, enable IMAP/SMTP access in GoDaddy's **Email & Office** settings (same "allow other apps" toggle mentioned in step 1 above — GoDaddy's webmail may label it slightly differently than Titan's own). Then run `test_connection` to confirm. If `godaddy` doesn't work for your specific plan, your mailbox may be on a different GoDaddy backend — check **Email & Office → Settings → Email Setup** in your GoDaddy dashboard for the exact IMAP/SMTP hostnames and override `TITAN_IMAP_HOST`/`TITAN_SMTP_HOST` directly (see [Configuration](#configuration)).
+
 ### Cursor and other MCP clients
 
 Any client that supports the standard `mcpServers` JSON shape (`command` / `args` / `env`) works the same way — use the Claude Desktop block above as a template and drop it into that client's MCP config file.
@@ -143,8 +181,9 @@ Run `list_folders` once after setup to confirm the exact Sent/Drafts folder name
 |---|---|
 | `test_connection` → `imap.status: "failed: ... Authentication failed"` | IMAP/SMTP access isn't enabled on the account yet, or the password is wrong. Re-check Settings → Enable Titan on other apps. |
 | Works for GoDaddy mailbox, fails with default settings | Set `TITAN_PROVIDER=godaddy`. |
+| GoDaddy mailbox still fails with `TITAN_PROVIDER=godaddy` | Your plan may use a different GoDaddy backend than `imap.secureserver.net`. Check **Email & Office → Settings → Email Setup** in your GoDaddy dashboard for the exact hostnames and set `TITAN_IMAP_HOST`/`TITAN_SMTP_HOST` directly — see [Configuration](#configuration). |
 | Connection times out | A firewall or VPN is blocking outbound 993/465. Try from a different network to confirm. |
-| MCP client shows the server as failed immediately on startup | `TITAN_EMAIL` or `TITAN_PASSWORD` is missing from the `env` block — this server exits immediately (by design) if either is unset; check the client's MCP server logs for the exact message. |
+| Every tool call returns "Missing TITAN_EMAIL and/or TITAN_PASSWORD" | Both are missing from the client's `env` block. Tools still appear in the client (by design, so directories can list them), but every call will fail until both are set. |
 | `send_email` returns an error about sending being disabled | `TITAN_ALLOW_SEND` is `false`. Use `save_draft` or `reply_email` with `draft_only: true`, or flip the flag on. |
 
 ## Development
