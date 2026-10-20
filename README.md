@@ -9,6 +9,8 @@ Connect Claude — Desktop, Code, Cursor, or any [MCP](https://modelcontextproto
 
 Package: [npmjs.com/package/titan-email-mcp](https://www.npmjs.com/package/titan-email-mcp) · Source: [github.com/qmmughal/titan-email-mcp](https://github.com/qmmughal/titan-email-mcp) · Listed on the [official MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.qmmughal/titan-email-mcp) as `io.github.qmmughal/titan-email-mcp`, and on [Smithery](https://smithery.ai/servers/qmmughal/titan-email-mcp)
 
+[![Titan Email MCP server](https://mcprush.com/badge/titan-email-mcp/card.svg)](https://mcprush.com/to/titan-email-mcp?ref=badge)
+
 Titan Email (the mailbox product bundled with many domain registrars, including **GoDaddy**) has no public REST API. This server bridges that gap by talking to Titan's standard **IMAP** and **SMTP** endpoints instead, so your AI assistant gets real mailbox access without any vendor integration work.
 
 **Contents:** [Why use this](#why-use-this) · [Supported providers](#supported-providers) · [Tools](#tools) · [Quick start](#quick-start) · [GoDaddy users — ready-to-paste config](#godaddy-users--ready-to-paste-config) · [Configuration](#configuration) · [Security notes](#security-notes) · [Troubleshooting](#troubleshooting) · [Development](#development) · [Contributing](#contributing) · [License](#license)
