@@ -1,0 +1,39 @@
+# Fly.io config for the hosted (remote connector) server. See README → Hosted connector → Fly.io.
+# App names are global on Fly: if "titan-email-mcp" is taken, change `app` and PUBLIC_BASE_URL together.
+app = "titan-email-mcp"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "3000"
+  PUBLIC_BASE_URL = "https://titan-email-mcp.fly.dev"
+  # Fly's proxy is the one hop in front of the app; needed for per-IP sign-in rate limiting.
+  TRUST_PROXY = "1"
+  # TOKEN_SECRET is a secret, not an env var: `fly secrets set TOKEN_SECRET=...`
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  # Stateless server: machines can stop when idle and start on the next request.
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 50
+    hard_limit = 100
+
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "30s"
+    timeout = "5s"
+    method = "GET"
+    path = "/healthz"
+
+[[vm]]
+  memory = "256mb"
+  cpu_kind = "shared"
+  cpus = 1

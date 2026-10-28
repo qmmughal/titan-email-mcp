@@ -200,6 +200,23 @@ docker run -p 3000:3000   -e TOKEN_SECRET="$(openssl rand -base64 48)"   -e PUBL
 
 Without Docker: `npm ci && npm run build && npm run start:http` with the same variables.
 
+#### Fly.io
+
+The repo includes a [`fly.toml`](fly.toml). Install [flyctl](https://fly.io/docs/flyctl/install/), then from the
+repo root:
+
+```bash
+fly auth login
+fly launch --copy-config --no-deploy        # creates the app from fly.toml; keep the name or pick another
+fly secrets set TOKEN_SECRET="$(node -e "console.log(require('crypto').randomBytes(48).toString('base64'))")"
+fly deploy
+```
+
+If you picked a different app name, update both `app` and `PUBLIC_BASE_URL` in `fly.toml` before
+deploying. Check it's up at `https://<app>.fly.dev/healthz`, then connect `https://<app>.fly.dev/mcp`
+in Claude. Machines stop when idle and start on the next request, so the first call after a quiet
+period takes a second or two. Set `TOKEN_SECRET` once and leave it: changing it signs every user out.
+
 ### Connect it in Claude
 
 In Claude, open **Settings → Connectors → Add custom connector**, enter
