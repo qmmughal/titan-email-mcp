@@ -1,21 +1,24 @@
 {
   "name": "titan-email-mcp",
-  "version": "1.0.5",
-  "description": "MCP server that connects Claude (or any MCP client) to a Titan Email mailbox over IMAP/SMTP, tested and confirmed with GoDaddy mailboxes.",
+  "version": "1.1.0",
+  "description": "MCP server that connects Claude (or any MCP client) to a Titan Email mailbox over IMAP/SMTP, locally over stdio or hosted as an OAuth-protected remote connector. Tested and confirmed with GoDaddy mailboxes.",
   "mcpName": "io.github.qmmughal/titan-email-mcp",
   "main": "dist/index.js",
   "type": "module",
   "bin": {
-    "titan-email-mcp": "dist/index.js"
+    "titan-email-mcp": "dist/index.js",
+    "titan-email-mcp-http": "dist/http.js"
   },
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "PRIVACY.md"
   ],
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
+    "start:http": "node dist/http.js",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
@@ -44,12 +47,17 @@
   "homepage": "https://github.com/qmmughal/titan-email-mcp#readme",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.1",
+    "cors": "^2.8.6",
+    "express": "^5.3.0",
+    "express-rate-limit": "^8.7.1",
     "imapflow": "^2.3.0",
     "mailparser": "^3.9.37",
     "nodemailer": "^10.0.16",
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
     "@types/mailparser": "^3.9.0",
     "@types/node": "^26.6.4",
     "@types/nodemailer": "^8.0.2",
