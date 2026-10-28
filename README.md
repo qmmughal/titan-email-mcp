@@ -13,7 +13,7 @@ Package: [npmjs.com/package/titan-email-mcp](https://www.npmjs.com/package/titan
 
 Titan Email (the mailbox product bundled with many domain registrars, including **GoDaddy**) has no public REST API. This server bridges that gap by talking to Titan's standard **IMAP** and **SMTP** endpoints instead, so your AI assistant gets real mailbox access without any vendor integration work.
 
-**Contents:** [Why use this](#why-use-this) · [Supported providers](#supported-providers) · [Tools](#tools) · [Quick start](#quick-start) · [GoDaddy users — ready-to-paste config](#godaddy-users--ready-to-paste-config) · [Configuration](#configuration) · [Security notes](#security-notes) · [Troubleshooting](#troubleshooting) · [Development](#development) · [Contributing](#contributing) · [License](#license)
+**Contents:** [Why use this](#why-use-this) · [Supported providers](#supported-providers) · [Tools](#tools) · [Quick start](#quick-start) · [Claude Code plugin](#claude-code-plugin) · [GoDaddy users — ready-to-paste config](#godaddy-users--ready-to-paste-config) · [Configuration](#configuration) · [Security notes](#security-notes) · [Troubleshooting](#troubleshooting) · [Development](#development) · [Contributing](#contributing) · [License](#license)
 
 ## Why use this
 
@@ -152,6 +152,18 @@ Before either one works, enable IMAP/SMTP access in GoDaddy's **Email & Office**
 ### Cursor and other MCP clients
 
 Any client that supports the standard `mcpServers` JSON shape (`command` / `args` / `env`) works the same way — use the Claude Desktop block above as a template and drop it into that client's MCP config file.
+
+## Claude Code plugin
+
+This repo is also a Claude Code plugin (in [`plugin/`](plugin/)). It runs the same npm package, prompts
+for your mailbox settings (the password goes to your system's secure credential store), and adds a skill
+that has Claude confirm before sending. Sending is **off by default** in the plugin; turn on
+"Allow sending" in its settings. Do step 1 of the quick start (enable IMAP/SMTP access) first.
+
+```bash
+claude plugin marketplace add qmmughal/titan-email-mcp
+claude plugin install titan-email-mcp@qmmughal-titan-email
+```
 
 ## Configuration
 
