@@ -13,7 +13,7 @@ Package: [npmjs.com/package/titan-email-mcp](https://www.npmjs.com/package/titan
 
 Titan Email (the mailbox product bundled with many domain registrars, including **GoDaddy**) has no public REST API. This server bridges that gap by talking to Titan's standard **IMAP** and **SMTP** endpoints instead, so your AI assistant gets real mailbox access without any vendor integration work.
 
-**Contents:** [Why use this](#why-use-this) · [Supported providers](#supported-providers) · [Tools](#tools) · [Quick start](#quick-start) · [Claude Code plugin](#claude-code-plugin) · [Hosted connector](#hosted-connector-remote-mcp) · [GoDaddy users — ready-to-paste config](#godaddy-users--ready-to-paste-config) · [Configuration](#configuration) · [Security notes](#security-notes) · [Troubleshooting](#troubleshooting) · [Development](#development) · [Contributing](#contributing) · [License](#license)
+**Contents:** [Why use this](#why-use-this) · [Supported providers](#supported-providers) · [Tools](#tools) · [Quick start](#quick-start) · [GoDaddy users — ready-to-paste config](#godaddy-users--ready-to-paste-config) · [Configuration](#configuration) · [Security notes](#security-notes) · [Troubleshooting](#troubleshooting) · [Development](#development) · [Contributing](#contributing) · [License](#license)
 
 ## Why use this
 
@@ -153,61 +153,6 @@ Before either one works, enable IMAP/SMTP access in GoDaddy's **Email & Office**
 
 Any client that supports the standard `mcpServers` JSON shape (`command` / `args` / `env`) works the same way — use the Claude Desktop block above as a template and drop it into that client's MCP config file.
 
-## Claude Code plugin
-
-This repo is also a Claude Code plugin (in [`plugin/`](plugin/)). It runs the same npm package, prompts
-for your mailbox settings (the password goes to your system's secure credential store), and adds a skill
-that has Claude confirm before sending. Sending is **off by default** in the plugin; turn on
-"Allow sending" in its settings. Do step 1 of the quick start (enable IMAP/SMTP access) first.
-
-```bash
-claude plugin marketplace add qmmughal/titan-email-mcp
-claude plugin install titan-email-mcp@qmmughal-titan-email
-```
-
-## Hosted connector (remote MCP)
-
-The same server can run on the web as a **remote MCP connector**, so you can add it to Claude
-(claude.ai, Claude Desktop, mobile) by URL with no local install. It speaks Streamable HTTP at `/mcp`
-and is its own OAuth 2.1 authorization server, because Titan has no OAuth:
-
-1. Claude connects and is sent to the server's sign-in page.
-2. You enter your mailbox address, password, provider, and whether Claude may send mail.
-3. The server checks the login against your provider's IMAP server, then **encrypts your settings into
-   the OAuth token that Claude holds**. The server has no database and stores no passwords or mail.
-
-Tokens last 1 hour and refresh for 30 days. Changing your mailbox password, or rotating the server's
-`TOKEN_SECRET`, cuts off every existing connection. Redirects are only allowed to Claude's callback
-hosts, and sign-in attempts are rate-limited per IP.
-
-### Deploy it
-
-Any host that runs Docker or Node 18+ behind HTTPS works (Fly.io, Render, Railway, Cloud Run, a VPS
-with Caddy or nginx):
-
-```bash
-docker build -t titan-email-mcp .
-docker run -p 3000:3000   -e TOKEN_SECRET="$(openssl rand -base64 48)"   -e PUBLIC_BASE_URL=https://titan-mcp.example.com   titan-email-mcp
-```
-
-| Variable | Required | Purpose |
-|---|---|---|
-| `TOKEN_SECRET` | Yes | 32+ random characters used to encrypt tokens. Keep it secret and stable; changing it signs everyone out. |
-| `PUBLIC_BASE_URL` | Yes, in production | The public `https://` origin the server is reached at. |
-| `PORT` | No | Listen port, default `3000`. |
-| `ALLOWED_REDIRECT_HOSTS` | No | OAuth redirect hosts, default `claude.ai,claude.com,localhost,127.0.0.1`. |
-| `TRUST_PROXY` | No | Reverse-proxy hops in front of the server, for per-IP rate limiting. Default `1`. |
-
-Without Docker: `npm ci && npm run build && npm run start:http` with the same variables.
-
-### Connect it in Claude
-
-In Claude, open **Settings → Connectors → Add custom connector**, enter
-`https://<your-host>/mcp`, and sign in with your mailbox when prompted. Turn on
-**Settings → Enable Titan on other apps** in Titan webmail first.
-
-The server also serves a landing page at `/` and its [privacy policy](PRIVACY.md) at `/privacy`.
-
 ## Configuration
 
 All configuration is environment variables passed through your MCP client's server config — never command-line flags or files on disk.
@@ -229,8 +174,7 @@ Run `list_folders` once after setup to confirm the exact Sent/Drafts folder name
 ## Security notes
 
 - **Start read-only.** Set `TITAN_ALLOW_SEND=false` until you've watched Claude use the mailbox and trust the behavior. You can flip it on later with no code changes.
-- **Hosted connector:** your password is verified with your provider and then exists only inside the encrypted token Claude holds — see [Hosted connector](#hosted-connector-remote-mcp) and [PRIVACY.md](PRIVACY.md).
-- **Local mode: credentials live only in your MCP client's local config**, passed as environment variables to this process. They are never written to disk by this server, logged, or sent anywhere except Titan's own IMAP/SMTP servers over TLS.
+- **Credentials live only in your MCP client's local config**, passed as environment variables to this process. They are never written to disk by this server, logged, or sent anywhere except Titan's own IMAP/SMTP servers over TLS.
 - **Prefer an app-specific password** over your main account password if your provider supports one (check webmail security settings).
 - **Each tool call opens a short-lived IMAP session** and closes it immediately after — nothing is cached or kept connected between calls.
 - This server has no telemetry, no analytics, and no network calls other than to the IMAP/SMTP hosts you configure.
@@ -251,13 +195,12 @@ Run `list_folders` once after setup to confirm the exact Sent/Drafts folder name
 ```bash
 npm install
 npm run build   # tsc -> dist/
-npm start        # local stdio server (reads env vars from your shell)
-npm run start:http   # hosted HTTP + OAuth server (needs TOKEN_SECRET; see Hosted connector)
+npm start        # run the built server directly (reads env vars from your shell)
 ```
 
-`npm start` speaks MCP over stdio (`StdioServerTransport`), so running it directly just blocks waiting for a client on stdin. `npm run start:http` serves `http://localhost:3000/mcp`. The tools live in `src/server.ts` and are shared by both entry points (`src/index.ts` for stdio, `src/http.ts` for HTTP).
+The server speaks MCP over stdio (`StdioServerTransport`) — it's not an HTTP service, so running it directly just blocks waiting for a client on stdin.
 
-**Releasing a new version** (maintainers): bump `version` in `package.json` (and the matching `version` fields in `server.json`), run `npm run build` to confirm it compiles, commit and push, then `npm publish` from `titan-mcp/`. The package only ships `dist/`, `README.md`, `LICENSE`, and `PRIVACY.md` (see `files` in `package.json`) — source TypeScript stays GitHub-only. After the npm publish lands, update the [MCP Registry](https://registry.modelcontextprotocol.io) listing with `mcp-publisher publish` (requires `mcp-publisher login github` once per session — see the [registry quickstart](https://modelcontextprotocol.io/registry/quickstart)), then tag a GitHub release (`gh release create vX.Y.Z`) so Smithery's crawler picks up the new version via `smithery.yaml`.
+**Releasing a new version** (maintainers): bump `version` in `package.json` (and the matching `version` fields in `server.json`), run `npm run build` to confirm it compiles, commit and push, then `npm publish` from `titan-mcp/`. The package only ships `dist/`, `README.md`, and `LICENSE` (see `files` in `package.json`) — source TypeScript stays GitHub-only. After the npm publish lands, update the [MCP Registry](https://registry.modelcontextprotocol.io) listing with `mcp-publisher publish` (requires `mcp-publisher login github` once per session — see the [registry quickstart](https://modelcontextprotocol.io/registry/quickstart)), then tag a GitHub release (`gh release create vX.Y.Z`) so Smithery's crawler picks up the new version via `smithery.yaml`.
 
 ## Contributing
 
